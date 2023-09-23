@@ -54,14 +54,15 @@ class EmailService implements IEmailService {
 class LoansManager {
     private loans: { ISBN: string; userID: string; date: Date }[] = [];
 
-    loanBook(ISBN: string, userID: string) {
-        const library = new Library();
-        const emailService = new EmailService();
+    private emailService: EmailService;
+    private library: Library;
 
-        const book = library.searchByISBN(ISBN);
+    loanBook(ISBN: string, userID: string) {
+
+        const book = this.library.searchByISBN(ISBN);
         if (book) {
             this.loans.push({ ISBN, userID, date: new Date() });
-            emailService.sendEmail(userID, `Has solicitado el libro ${book.title}`);
+            this.emailService.sendEmail(userID, `Has solicitado el libro ${book.title}`);
         }
     }
 
