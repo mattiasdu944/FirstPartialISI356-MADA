@@ -54,8 +54,8 @@ class EmailService implements IEmailService {
 class LoansManager {
     private loans: { ISBN: string; userID: string; date: Date }[] = [];
 
-    private emailService: EmailService;
-    private library: Library;
+    private emailService: EmailService = new EmailService();
+    private library: Library = new Library();
 
     loanBook(ISBN: string, userID: string) {
 
@@ -78,6 +78,9 @@ class LoansManager {
 
 }
 
+interface IObserver {
+    update(message: string): void;
+}
 
 class User implements IObserver {
     constructor(public userID: string) {}
@@ -86,11 +89,6 @@ class User implements IObserver {
         console.log(`Usuario ${this.userID} ha recibido un mensaje: ${message}`);
     }
 }
-
-interface IObserver {
-    update(message: string): void;
-}
-
 
 class NotificationService {
     private observers: IObserver[] = [];
@@ -101,9 +99,9 @@ class NotificationService {
 
     removeObserver(observer: IObserver) {
         const index = this.observers.indexOf(observer);
-        if (index !== -1) {
-            this.observers.splice(index, 1);
-        }
+            if (index !== -1) {
+                this.observers.splice(index, 1);
+            }
     }
 
     notifyObservers(message: string) {
@@ -111,56 +109,34 @@ class NotificationService {
     }
 }
 
+class LibraryManager {
+    private static instance: LibraryManager;
 
+    private constructor(
+        private library: Library,
+        private loanManager: LoansManager,
+        private emailService: IEmailService,
+        private notificationService: NotificationService
+    ) {}
 
-
-class LibraryManagerEx {
-    books: any[] = [];
-    loans: any[] = [];
+    static getInstance() {
+        if (!LibraryManager.instance) {
+            const library = new Library();
+            const loanManager = new LoansManager();
+            const emailService = new EmailService();
+            const notificationService = new NotificationService();
+            LibraryManager.instance = new LibraryManager(library, loanManager, emailService, notificationService);
+        }
+        return LibraryManager.instance;
+    }
 
     addBook(title: string, author: string, ISBN: string) {
-        this.books.push({ title, author, ISBN });
+        this.library.addBook(title, author, ISBN);
+        this.notificationService.notifyObservers(`Nuevo libro agregado: ${title}`);
     }
 
     removeBook(ISBN: string) {
-        const index = this.books.findIndex(b => b.ISBN === ISBN);
-        if (index !== -1) {
-            this.books.splice(index, 1);
-        }
-    }
-
-    search(query: string) {
-        // Usa el mismo método para buscar por título, autor o ISBN
-        return this.books.filter(book =>
-            book.title.includes(query) ||
-            book.author.includes(query) ||
-            book.ISBN === query
-        );
-    }
-
-    loanBook(ISBN: string, userID: string) {
-        const book = this.books.find(b => b.ISBN === ISBN);
-        if (book) {
-            this.loans.push({ ISBN, userID, date: new Date() });
-            this.sendEmail(userID, `Has solicitado el libro ${book.title}`);
-        }
-    }
-
-    returnBook(ISBN: string, userID: string) {
-        const index = this.loans.findIndex(loan => loan.ISBN === ISBN && loan.userID === userID);
-        if (index !== -1) {
-            this.loans.splice(index, 1);
-            this.sendEmail(userID, `Has devuelto el libro con ISBN ${ISBN}. ¡Gracias!`);
-        }
-    }
-
-    sendEmail(userID: string, message: string) {
-        console.log(`Enviando email a ${userID}: ${message}`);
-        // Implementación ficticia del envío de correo
+        this.library.removeBook(ISBN);
+        this.notificationService.notifyObservers(`Libro eliminado: ISBN ${ISBN}`);
     }
 }
-
-// const libraryex = new LibraryManagerEx();
-// libraryex.addBook("El Gran Gatsby", "F. Scott Fitzgerald", "123456789");
-// libraryex.addBook("1984", "George Orwell", "987654321");
-// libraryex.loanBook("123456789", "user01");
