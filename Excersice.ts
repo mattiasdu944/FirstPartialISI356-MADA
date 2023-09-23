@@ -151,4 +151,20 @@ class LibraryManager {
     searchByISBN(ISBN: string) {
         return this.library.searchByISBN(ISBN);
     }
+
+    loanBook(ISBN: string, userID: string) {
+        this.loanManager.loanBook(ISBN, userID);
+    }
+
+    returnBook(ISBN: string, userID: string) {
+        this.loanManager.returnBook(ISBN, userID);
+    }
+
+    addUserObserver(user: IObserver) {
+        this.notificationService.addObserver(user);
+    }
+
+    removeUserObserver(user: IObserver) {
+        this.notificationService.removeObserver(user);
+    }
 }
