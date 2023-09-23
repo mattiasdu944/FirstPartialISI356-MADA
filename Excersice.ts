@@ -139,4 +139,16 @@ class LibraryManager {
         this.library.removeBook(ISBN);
         this.notificationService.notifyObservers(`Libro eliminado: ISBN ${ISBN}`);
     }
+
+    searchByTitle(query: string) {
+        return this.library.searchByTitle(query);
+    }
+
+    searchByAuthor(query: string) {
+        return this.library.searchByAuthor(query);
+    }
+
+    searchByISBN(ISBN: string) {
+        return this.library.searchByISBN(ISBN);
+    }
 }
